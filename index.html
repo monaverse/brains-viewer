@@ -64,6 +64,7 @@
       }
       loadingCover.style.display = "";
 
+      var theme = 'dark';
       const script = document.createElement("script");
       script.src = loaderUrl;
       script.onload = () => {
@@ -72,6 +73,7 @@
           progressBarEmpty.style.display = "";
           progressBarFull.style.width = `${100 * progress}%`;
         }).then((unityInstance) => {
+
           loadingCover.style.display = "none";
           if (canFullscreen) {
             if (!hideFullScreenButton) {
@@ -81,6 +83,34 @@
               unityInstance.SetFullscreen(1);
             };
           }
+          
+          function receiver(event) {
+            console.log('received message', event);
+            if (event.origin === 'https://www.monaverse.com' || event.origin.indexOf('http://localhost') == 0) { // Change to your actual origin
+              console.log('theme', event.data.theme)
+              if (event.data.theme) {
+                    const themeJson = JSON.stringify(event.data.theme);
+                    theme = event.data.theme;
+                    if (typeof unityInstance !== "undefined" && unityInstance.Module) {
+                        unityInstance.Module.SendMessage('Theme', 'SetColorModeFromJs', event.data.theme);
+                    } else {
+                        console.error("Unity instance or SetTheme function is not available.");
+                    }
+                } else {
+                    //console.error("Received data is not in the expected format.");
+                }
+            }
+          }
+          window.addEventListener('message', receiver, false);
+
+          const searchParams = new URLSearchParams(window.location.search);
+
+          if(searchParams.has('theme')) {
+            theme = searchParams.get('theme');
+          }
+            
+          unityInstance.Module.SendMessage('Theme', 'SetColorModeFromJs', theme);
+
         }).catch((message) => {
           alert(message);
         });
