@@ -65,6 +65,7 @@
       loadingCover.style.display = "";
 
       var theme = 'dark';
+      var color = 'ffffff';
       const script = document.createElement("script");
       script.src = loaderUrl;
       script.onload = () => {
@@ -89,10 +90,9 @@
             if (event.origin === 'https://www.monaverse.com' || event.origin.indexOf('http://localhost') == 0) { // Change to your actual origin
               console.log('theme', event.data.theme)
               if (event.data.theme) {
-                    const themeJson = JSON.stringify(event.data.theme);
-                    theme = event.data.theme;
+                    const themeJson = JSON.stringify(event.data);
                     if (typeof unityInstance !== "undefined" && unityInstance.Module) {
-                        unityInstance.Module.SendMessage('Theme', 'SetColorModeFromJs', event.data.theme);
+                        unityInstance.Module.SendMessage('Theme', 'SetColorModeFromJs', themeJson);
                     } else {
                         console.error("Unity instance or SetTheme function is not available.");
                     }
@@ -108,8 +108,12 @@
           if(searchParams.has('theme')) {
             theme = searchParams.get('theme');
           }
+
+          if(searchParams.has('color')) {
+            color = searchParams.get('color');
+          }
             
-          unityInstance.Module.SendMessage('Theme', 'SetColorModeFromJs', theme);
+          unityInstance.Module.SendMessage('Theme', 'SetColorModeFromJs', JSON.stringify({theme, color}));
 
         }).catch((message) => {
           alert(message);
